@@ -5,7 +5,7 @@
                 <div class="card shadow mb-4">
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="">Product Name </label>
+                            <label for="">Product Name vue vue</label>
                             <input type="text" v-model="product_name" placeholder="Product Name" class="form-control">
                         </div>
                         <div class="form-group">
@@ -24,8 +24,9 @@
                         <h6 class="m-0 font-weight-bold text-primary">Media</h6>
                     </div>
                     <div class="card-body border">
-                         @vdropzone-sending-multiple="uploaded_multiple_files"
-                        <vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>
+                        <vue-dropzone ref="myVueDropzone"
+                        @vdropzone-sending-multiple="uploaded_multiple_files"
+                        id="dropzone" :options="dropzoneOptions"></vue-dropzone>
                     </div>
                 </div>
             </div>
@@ -35,30 +36,6 @@
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <h6 class="m-0 font-weight-bold text-primary">Variants</h6>
                     </div>
-                    <!-- <div class="card-body">
-                        <div class="row" v-for="(item,index) in product_variant" :key="index">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="">Option</label>
-                                    <select v-model="item.option" class="form-control">
-                                        <option v-for="(variant,index2) in variants" :key="index2"
-                                                :value="variant.id">
-                                            {{ variant.title }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="form-group">
-                                    <label v-if="product_variant.length != 1" @click="product_variant.splice(index,1); checkVariant"
-                                           class="float-right text-primary"
-                                           style="cursor: pointer;">Remove</label>
-                                    <label v-else for="">.</label>
-                                    <input-tag v-model="item.tags" @input="checkVariant" class="form-control"></input-tag>
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
                     <div class="card-body">
                         <div class="row" v-for="item in product_variant">
                             <div class="col-md-4">
@@ -99,7 +76,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr v-for="variant_price in product_variant_prices">
+                                <tr v-for="variant_price in product_variant_prices" >
                                     <td>{{ variant_price.title }}</td>
                                     <td>
                                         <input type="text" class="form-control" v-model="variant_price.price">
@@ -135,6 +112,10 @@ export default {
         variants: {
             type: Array,
             required: true
+        },
+        productId: {
+            type: Number,
+            required: true
         }
     },
     data() {
@@ -154,7 +135,8 @@ export default {
                 url: 'https://httpbin.org/post',
                 thumbnailWidth: 150,
                 maxFilesize: 0.5,
-                headers: {"My-Awesome-Header": "header value"}
+                headers: {"My-Awesome-Header": "header value"},
+                uploadMultiple :true
             }
         }
     },
@@ -196,9 +178,11 @@ export default {
                 return pre;
             }
             let self = this;
-            let ans = arr[0].reduce(function (ans, value) {
+            let ans = arr.reduce(function (ans, value) {
+                console.log(ans,'slice',arr.slice(1))
                 return ans.concat(self.getCombn(arr.slice(1), pre + value + '/'));
             }, []);
+            console.log(ans,'answer bill mobile');
             return ans;
         },
 
@@ -211,18 +195,23 @@ export default {
             //     product_image: this.images,
             //     product_variant: this.product_variant,
             //     product_variant_prices: this.product_variant_prices
-            // }
-             const formData = new FormData();
+            // };
+            const formData = new FormData();
             formData.append('title',this.product_name);
             formData.append('sku',this.product_sku);
             formData.append('description',this.description);
+            // this.images.forEach(image=>{
+            //     formData.append('product_image[]',image);
+            // })
             formData.append('product_image',JSON.stringify(this.images));
-  formData.append('product_variant',JSON.stringify(this.product_variant));
+            // product_variant.forEach(variant=>{
+            //     formData.append('product_variant[]',variant)
+            // })
+            formData.append('product_variant',JSON.stringify(this.product_variant));
             formData.append('product_variant_prices',JSON.stringify(this.product_variant_prices));
             formData.append('_token',document.querySelector('meta[name="csrf-token"]').content)
-                //  `/product/${this.productId}`, formData
-            // axios.post('/product', product).then(response => {
-            axios.post('/product', formData).then(response => {
+
+            axios.post(`/product/${this.productId}`, formData).then(response => {
                 console.log(response.data);
             }).catch(error => {
                 console.log(error);
@@ -230,7 +219,7 @@ export default {
 
             console.log(product);
         },
-          uploaded_multiple_files(files, xhr, formData){
+        uploaded_multiple_files(files, xhr, formData){
             console.log(files);
             console.log("updated from uploaded")
             this.images = [...this.images,...files]

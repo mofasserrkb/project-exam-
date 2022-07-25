@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Models\Variant;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -23,7 +23,14 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::resource('product-variant', 'VariantController');
-    Route::resource('product', 'ProductController');
+    Route::resource('product', 'ProductController')->except('update');
+    Route::post('/product/{product}','ProductController@update');
     Route::resource('blog', 'BlogController');
     Route::resource('blog-category', 'BlogCategoryController');
+});
+Route::get('/addproduct',function(){
+    $variants = Variant::all();
+    return view('products.create', compact('variants'));
+    // return view('products.variant.create');
+   // return view('products.add',$variants);
 });
